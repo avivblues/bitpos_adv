@@ -1,0 +1,183 @@
+extends layout
+
+block style
+	style(type='text/css').
+		
+block halaman
+	ol.breadcrumb
+		li
+			a(href='/') Home
+		li.active #{title}
+	.row.mt
+		.col-xs-12
+			.content-panel
+				.row
+					.col-xs-12.col-sm-6.col-md-8
+						.col-xs-8.col-md-6
+							.btn-group(role='group', aria-label='...')
+								button#btnnewcoa.btn.btn-success(type='button') New
+								//button.btn.btn-info(type='button') On
+								//button.btn.btn-default(type='button') Off
+								.btn-group(role='group')
+									button.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+										| Export
+										span.caret
+									ul.dropdown-menu
+										li
+											a(href='#') Excel
+										li
+											a(href='#') CSV
+										li
+											a(href='#') PDF
+								button.btn.btn-warning(type='button') Import
+						.col-xs-4.col-md-2
+							select.form-control
+								option(selected='') Show
+								option 10
+								option 50
+								option 100
+					.col-xs-6.col-md-4
+						.input-group
+							input.form-control(type='text', placeholder='Search for')
+							span.input-group-btn
+								button.btn.btn-default(type='button') Go!
+				br
+				section#no-more-tables
+					table#tabledata.table.table-bordered.table-striped.table-condensed.cf
+						thead.cf
+							tr
+								th No
+								th Code
+								th Name
+								th Action
+						tbody
+							each baris in data
+								tr
+									td(id='dt'+baris.um_id)=baris.um_id
+									td(id='dtcd'+baris.um_id)=baris.um_code
+									td(id='dtdsc'+baris.um_id)=baris.um_name
+									td(id='Action')
+										button.btn.btn-primary.btn-xs(id='edit'+baris.um_id)
+											i.fa.fa-pencil
+										//button.btn.btn-danger.btn-xs(id='males'+baris.um_id)
+										button.btn.btn-danger.btn-xs(id=baris.um_id)
+											i.fa.fa-trash-o
+		// Modal Create master coa
+		#MDL_New_stcoa.modal.fade(tabindex='-1', role='dialog', aria-labelledby='lbl_mdl_stcoa')
+			.modal-dialog(role='document')
+				.modal-content
+					.modal-header
+						button.close(type='button', data-dismiss='modal', aria-label='Close')
+							span(aria-hidden='true') ×
+						h4#lbl_mdl_stcoa.modal-title Create Form
+					.modal-body
+						.form-group
+							label Code
+							input#mdl_create_code.form-control(type='text')
+							label Name
+							input#mdl_create_name.form-control(type='text')
+					.modal-footer
+						button.btn.btn-default(type='button', data-dismiss='modal') Close
+						button#mdlbtncreatecoa.btn.btn-primary(type='button') Save changes
+		// Modal Editing master 
+		#MDL_Edit_stcoa.modal.fade(tabindex='-1', role='dialog', aria-labelledby='lbl_mdl_stcoa')
+			.modal-dialog(role='document')
+				.modal-content
+					.modal-header
+						button.close(type='button', data-dismiss='modal', aria-label='Close')
+							span(aria-hidden='true') ×
+						h4#lbl_mdl_stcoa.modal-title Editing Form
+					.modal-body
+						.form-group
+							label#mdl_edit_lbl_id No
+							input#mdl_edit_id.form-control(type='text', readonly='')
+							label Code
+							input#mdl_edit_code.form-control(type='text')
+							label Name
+							input#mdl_edit_name.form-control(type='text')
+					.modal-footer
+						button#mdlbtneditumc.btn.btn-default(type='button', data-dismiss='modal') Close
+						button#mdlbtneditum.btn.btn-primary(type='button') Save changes
+append script
+	script(type='application/javascript').
+		$(function(){
+			// select picker end			
+			$(".btn.btn-primary.btn-xs").click(function(){
+				var eID = $(this).attr("id").replace("edit","");
+				var cd = $("#dtcd"+eID).text();var dsc = $("#dtdsc"+eID).text();
+
+				$("#mdl_edit_id").val(eID);
+				$("#mdl_edit_code").val(cd);
+				$("#mdl_edit_name").val(dsc);
+				$('#MDL_Edit_stcoa').modal('show')
+			});
+			$("#btnnewcoa").click(function(){
+				var eID = $(this).attr("id").replace("edit","");
+				$('#MDL_New_stcoa').modal('show')
+			});
+			$("#mdlbtncreatecoa").click(function(){
+				var a = $("#mdl_create_code").val();
+				var b = $("#mdl_create_name").val();
+				var data={um_code:a,um_name:b};
+				var result = confirm("Create Category?");
+				if (result) {
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '/mstrprodum/create',						
+						success: function(data) {
+							console.log(data);
+							alert(data);
+						}
+					});
+					location.reload(false);
+				}
+			});
+			$("#mdlbtneditum").click(function(){
+				var a = $("#mdl_edit_id").val();
+				var b = $("#mdl_edit_code").val();
+				var c = $("#mdl_edit_name").val();
+				var data={
+							"set": {um_code:b,um_name:c},
+							"where":{um_id:a}
+							};
+				var result = confirm("Change this?");
+				if (result) {
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '/mstrprodum/update',						
+						success: function(data) {
+							console.log(data);
+							if(data=="OK"){
+								alert("Success!");
+								location.reload(false);
+							}						}
+					});
+				}
+			});
+			$(".btn.btn-danger.btn-xs").click(function(){
+				var result = confirm("Want to delete this?");
+				if (result) {
+				var data={};
+				data.um_id=$(this).attr("ID");
+				$.ajax({
+					type: 'POST',
+					data: JSON.stringify(data),
+					contentType: 'application/json',
+					url: '/mstrprodum/delete',						
+					success: function(data) {
+						if(data=="OK"){
+							alert("Success!");
+							location.reload(false);
+						}
+					}
+				});
+				}
+			});
+
+		});
+		
+		

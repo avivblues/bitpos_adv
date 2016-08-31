@@ -1,0 +1,618 @@
+extends layout
+
+block style
+	style(type='text/css').
+		#tblproductvarian{
+			display: none;
+		}
+		#hidetblproductvarian{
+			display: none;
+		}
+		.dropdown-menu {
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		}
+		.dropdown-menu a {
+		overflow: hidden;
+		outline: none;
+		}
+		.additem input
+		{
+		border:0;
+		margin:-3px;
+		padding:3px;
+		outline: none;
+		color: #000;
+		width: 99%;
+		}
+		.additem:hover input{
+		background-color: #f5f5f5;
+		}
+		.additem .check-mark
+		{
+		opacity: 0;
+		z-index: -1000;
+		}
+		.addnewicon {
+		position: relative;
+		padding: 4px;
+		margin: -8px;
+		padding-right: 50px;
+		margin-right: -50px;
+		color: #aaa;
+		}
+		.addnewicon:hover{
+		color: #222;
+		}
+
+block halaman
+	ol.breadcrumb
+		li
+			a(href='/') Home
+		li.active #{title}
+	.row.mt
+		.col-xs-12
+			.content-panel
+				.row
+					.col-xs-12.col-sm-6.col-md-8
+						.col-xs-8.col-md-6
+							.btn-group(role='group', aria-label='...')
+								button#btnnewitem.btn.btn-success(type='button') New
+								//button.btn.btn-info(type='button') On
+								//button.btn.btn-default(type='button') Off
+								.btn-group(role='group')
+									button.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+										| Export
+										span.caret
+									ul.dropdown-menu
+										li
+											a(href='#') Excel
+										li
+											a(href='#') CSV
+										li
+											a(href='#') PDF
+										li.divider(role='separator')
+										li
+											a(href='#') Link Excel Synchronize
+								button.btn.btn-warning(type='button') Import
+						.col-xs-4.col-md-2
+							select.form-control
+								option(selected='') Show
+								option 10
+								option 50
+								option 100
+								option 1000
+						.col-xs-6.col-md-4
+							select.form-control
+								option(selected='') Category
+								option abc
+								option xyz
+								option def
+					.col-xs-6.col-md-4
+						.input-group
+							input.form-control(type='text', placeholder='Search for.... or scan barcode')
+							span.input-group-btn
+								button.btn.btn-default(type='button') Go!
+				br
+				section#no-more-tables
+					table.table.table-bordered.table-striped.table-condensed.cf
+						thead.cf
+							tr
+								th No
+								th Code
+								th Name
+								th Merk
+								th Descriptions
+								th Category
+								th UM
+								th Type
+								th.numeric Stock
+								th.numeric Unit Price
+								th.numeric Selling Price
+								th Action
+						tbody
+							each baris in data
+								tr
+									td(data-title='No')=baris.mstr_id
+									td(data-title='Code')=baris.mstr_code
+									td(data-title='Name')=baris.mstr_name
+									td(data-title='Merk')=baris.mstr_merk
+									td(data-title='Descriptions')=baris.mstr_desc
+									td(data-title='Cat')=baris.mstr_desc
+									td(data-title='UM')=baris.mstr_um
+									td(data-title='Type')=baris.mstr_type
+									td.numeric(data-title='Stock') 0
+									td.numeric(data-title='COGM') IDR. 5.000
+									td.numeric(data-title='COGS') IDR. 5.500
+									td(data-title='Action')
+										button.btn.btn-primary.btn-xs(id='edit'+baris.mstr_id)
+											i.fa.fa-pencil
+										//button.btn.btn-danger.btn-xs(id='males'+baris.mstr_id)
+										button.btn.btn-danger.btn-xs(id=baris.mstr_id)
+											i.fa.fa-trash-o
+			.col-sm-6
+				#example_info.dataTables_info(aria-live='polite', role='status') Showing 1 to 10 of 57 entries
+			.col-sm-4
+				nav(aria-label='Page navigation')
+					ul.pagination
+						li
+							a(href='#', aria-label='Previous')
+								span(aria-hidden='true') «
+						li
+							a(href='#') 1
+						li
+								a(href='#') 2
+						li
+							a(href='#') 3
+						li
+							a(href='#') 4
+						li
+							a(href='#') 5
+						li
+							a(href='#', aria-label='Next')
+								span(aria-hidden='true') »									
+		// Modal New master item
+		#MDL_New_mstritem.modal.fade(tabindex='-1', role='dialog', aria-labelledby='lbl_mdl_mstritem')
+			.modal-dialog(role='document')
+				.modal-content
+					.modal-header
+						button.close(type='button', data-dismiss='modal', aria-label='Close')
+							span(aria-hidden='true') ×
+						h4#lbl_mdl_mstritem.modal-title New Form
+					.modal-body
+						.form-group
+							if setautonumber=="no"
+								label Code
+								input#mdl_new_code.form-control(type='text')
+							label Name
+							input#mdl_new_name.form-control(type='text')
+							label Merk
+							select#selectmerk.form-control
+								each bdata in merkrows
+									option(value=bdata.mr_id)=bdata.mr_name
+							label Descriptions
+							input#mdl_new_desc.form-control(type='text')
+							label Category
+							select#select_new_cat.form-control
+								each brdata in catrows
+									option(value=brdata.st_id)=brdata.st_name
+							label UM 
+							select#select_new_um.form-control
+								each brdata2 in umrows
+									option(value=brdata2.um_id)=brdata2.um_name
+							label Type
+							select#select_new_type.form-control
+								each brdata3 in typerows
+									option(value=brdata3.tp_id)=brdata3.tp_name
+							label#lblnstock Stock
+							input#mdl_new_stock.form-control(type='number')
+							label#lblnprice Price
+							input#mdl_new_price.form-control(type='number')
+							label @Varian Product
+								a#showtblproductvarian(href='#')
+									span.glyphicon.glyphicon-plus 
+								a#hidetblproductvarian(href='#')
+									span.glyphicon.glyphicon-minus
+							.table-responsive
+							table#tblproductvarian.table.table-condensed
+								thead
+									tr
+										th item
+										th Stock
+										th Price
+								tbody
+									tr
+										td 
+											input#101.form-control(type='text')
+										td 
+											input#102.form-control(type='number')
+										td 
+											input#103.form-control(type='number')
+					.modal-footer
+						button.btn.btn-default(type='button', data-dismiss='modal') Close
+						button#btnnewproduct.btn.btn-primary(type='button') Save changes
+		// Modal Editing master item
+		#MDL_Edit_mstritem.modal.fade(tabindex='-1', role='dialog', aria-labelledby='lbl_mdl_mstritem')
+			.modal-dialog(role='document')
+				.modal-content
+					.modal-header
+						button.close(type='button', data-dismiss='modal', aria-label='Close')
+							span(aria-hidden='true') ×
+						h4#lbl_mdl_mstritem.modal-title Editing Form
+					.modal-body
+						.form-group
+							label#mdl_edit_lbl_id Product No
+							input#mdl_edit_id.form-control(type='text', readonly='')
+							label Code
+							input#mdl_edit_code.form-control(type='text')
+							label Name
+							input#mdl_edit_name.form-control(type='text')
+							label Merk
+							select#selectmerk.form-control
+								each bdata in merkrows
+									option(value=bdata.mr_id)=bdata.mr_name
+							label Descriptions
+							input#mdl_edit_desc.form-control(type='text')
+							label Category
+							select#select_new_cat.form-control
+								each brdata in catrows
+									option(value=brdata.st_id)=brdata.st_name
+							label UM 
+							select#select_new_um.form-control
+								each brdata2 in umrows
+									option(value=brdata2.um_id)=brdata2.um_name
+							label Type
+							select#select_new_type.form-control
+								each brdata3 in typerows
+									option(value=brdata3.tp_id)=brdata3.tp_name
+							label - Varian Product -
+							.table-responsive
+							table.table.table-condensed
+								thead
+									tr
+										th item
+										th Stock
+										th Price
+								tbody
+									tr
+										td 
+											input#E101.form-control(type='text')
+										td 
+											input#E102.form-control(type='number')
+										td 
+											input#E103.form-control(type='number')
+					.modal-footer
+						button.btn.btn-default(type='button', data-dismiss='modal') Close
+						button.btn.btn-primary(type='button') Save changes
+append script
+	script(src='public/js/jquery.caret.min.js')
+	script(type='application/javascript').
+		$(function(){
+			// select Type
+			var contenttype = "<input type=text onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPresstype(this,event)' onClick='event.stopPropagation()' placeholder='Add Type'> <span class='glyphicon glyphicon-plus addnewicon' onClick='addSelectItemtype(this,event,1);'></span>";
+			var dividertype = $('<option/>')
+				.addClass('divider')
+				.data('divider', true);
+			var addoptiontype = $('<option/>')
+				.addClass('additem')
+				.data('content', contenttype)
+			$('#select_new_type')
+				.append(dividertype)
+				.append(addoptiontype)
+				.selectpicker();
+			// select category
+			var content = "<input type=text onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPress(this,event)' onClick='event.stopPropagation()' placeholder='Add Category'> <span class='glyphicon glyphicon-plus addnewicon' onClick='addSelectItem(this,event,1);'></span>";
+			var divider = $('<option/>')
+				.addClass('divider')
+				.data('divider', true);
+			var addoption = $('<option/>')
+				.addClass('additem')
+				.data('content', content)
+			$('#select_new_cat')
+				.append(divider)
+				.append(addoption)
+				.selectpicker();
+			// select Merk
+			var contentmerk = "<input type=text onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPressmerk(this,event)' onClick='event.stopPropagation()' placeholder='Add Merk'> <span class='glyphicon glyphicon-plus addnewicon' onClick='addSelectItemmerk(this,event,1);'></span>";
+			var dividermerk = $('<option/>')
+				.addClass('divider')
+				.data('divider', true);
+			var addoptionmerk = $('<option/>')
+				.addClass('additem')
+				.data('content', contentmerk)
+			$('#selectmerk')
+				.append(dividermerk)
+				.append(addoptionmerk)
+				.selectpicker();
+			// select category
+			var content = "<input type=text onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPress(this,event)' onClick='event.stopPropagation()' placeholder='Add Category'> <span class='glyphicon glyphicon-plus addnewicon' onClick='addSelectItem(this,event,1);'></span>";
+			var divider = $('<option/>')
+				.addClass('divider')
+				.data('divider', true);
+			var addoption = $('<option/>')
+				.addClass('additem')
+				.data('content', content)
+			$('#select_new_cat')
+				.append(divider)
+				.append(addoption)
+				.selectpicker();
+			//select picker um
+			var contentum = "<input type=text onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPressum(this,event)' onClick='event.stopPropagation()' placeholder='Add UM'> <span class='glyphicon glyphicon-plus addnewicon' onClick='addSelectItemum(this,event,1);'></span>";
+			var dividerum = $('<option/>')
+				.addClass('divider')
+				.data('divider', true);
+			var addoptionum = $('<option/>')
+				.addClass('additem')
+				.data('content', contentum)	
+			$('#select_new_um')
+				.append(dividerum)
+				.append(addoptionum)
+				.selectpicker();
+			// select picker end			
+			$(".btn.btn-primary.btn-xs").click(function(){
+				var eID = $(this).attr("id").replace("edit","");
+				$("#mdl_edit_id").val(eID);
+				$('#MDL_Edit_mstritem').modal('show')
+			});
+			$("#btnnewitem").click(function(){
+				var eID = $(this).attr("id").replace("edit","");
+				$('#MDL_New_mstritem').modal('show')
+			});
+			// Handling event elements
+			$("#btnnewproduct").click(function(){
+				if ($('#hidetblproductvarian').is(':hidden')){
+					if($("#mdl_new_code").length){var xcode = $("#mdl_new_code").val();var xauto="no";}else{var xcode = "";var xauto="yes";}
+					var data={
+					"model": {model:"single",auton:xauto},
+					"set":{mstr_code:xcode,mstr_name:$("#mdl_new_name").val(),mstr_merk:$("#selectmerk").val(),mstr_desc:$("#mdl_new_desc").val(),
+					mstr_cat:$("#select_new_cat").val(),mstr_um:$("#select_new_um").val(),mstr_type:$("#select_new_type").val()}
+					};
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '/mstritem/insert',						
+						success: function(data) {
+							//console.log(data);
+							alert(data);		
+						}
+					});
+				}else{
+					var lastID = $("#tblproductvarian tr:last td input[type=text]").attr("ID");
+					var jmlvarian =  Math.floor(parseInt(lastID)/100);
+					var data={"model": {model:"multi",auton:xauto,jmlvarian:jmlvarian}};
+					var newdata = new Array();
+					for(var i=1;i<=jmlvarian;i++){
+						var angka=(i*100)+1;
+						var j = i-1;
+						newdata[j] = [xcode+"."+angka,
+						$("#mdl_new_name").val()+"."+$("#"+angka+"").val(),
+						$("#selectmerk").val(),
+						$("#mdl_new_desc").val(),
+						$("#select_new_cat").val(),
+						$("#select_new_um").val(),
+						$("#select_new_type").val()];
+					}
+					data['set']= newdata;
+					//alert(JSON.stringify(data));
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '/mstritem/insert',						
+						success: function(data) {
+							alert(data);		
+						}
+					});
+				}
+			});
+			$("#hidetblproductvarian").click(function(){
+				$("#tblproductvarian").hide();
+				$("#showtblproductvarian").show();
+				$("#lblnstock").show();$("#mdl_new_stock").show();
+				$("#lblnprice").show();$("#mdl_new_price").show();
+				$(this).hide();
+			});
+			$("#showtblproductvarian").click(function(){
+				$("#tblproductvarian").show();$("#hidetblproductvarian").show();
+				$("#lblnstock").hide();$("#mdl_new_stock").hide();
+				$("#lblnprice").hide();$("#mdl_new_price").hide();
+				$(this).hide();
+			});
+			$("#tblproductvarian").on("keydown","input[type=text]",function(e){
+				var lastID = $("#tblproductvarian tr:last td input[type=text]").attr("ID");
+				switch (e.keyCode){
+					case 13:
+						var elem = parseInt(lastID) + 100;//201
+						var selem = Math.floor(elem/100)*100;
+						var pjng = $("#tblproductvarian tr:last td").length;
+						$("#tblproductvarian tr:last").after("<tr></tr>");
+						for(i=1;i<=pjng;i++){
+							var jco = (selem-100)+i;
+							var clon = $("#"+jco+"").clone().prop({id:""+(selem+i)+""},{name:""+(selem+i)+""}).val('');
+							$("#tblproductvarian tr:last").append("<td>");
+							$("#tblproductvarian tr:last td:last").append(clon);
+						}
+						var c = selem+1
+						$(this).removeClass("focused");
+						$("#"+c+"").addClass("focused");
+						$("#"+c+"").focus().select();
+						break;
+					case 8:
+						var elem = (parseInt(lastID) - 1);
+						var elem1 = (parseInt(lastID) - 100);
+						var str = $(this).caret();
+						var selem = Math.floor(elem1/100)*100;
+						if (str==0 && lastID!=101){
+							if ($("#"+elem+"").length != 0) {
+								$(this).removeClass("focused");
+								$("#"+elem+"").addClass("focused");
+								$("#"+elem+"").focus().select();
+							}else{
+								if($("#"+elem1+"").length != 0){
+									$(this).removeClass("focused");
+									$("#tblproductvarian tr:last").remove();
+									var c = selem+1;
+									$("#"+c+"").addClass("focused");
+									$("#"+c+"").focus().select();
+								}
+							}
+						}
+						break;
+				}
+			});			
+			$(".btn.btn-danger.btn-xs").click(function(){
+				var result = confirm("Want to delete this item?");
+				if (result) {
+				var data={};
+				data.mstr_id=$(this).attr("ID");
+				$.ajax({
+					type: 'POST',
+					data: JSON.stringify(data),
+					contentType: 'application/json',
+					url: '/mstritem/delete',						
+					success: function(data) {
+						if(data=="OK"){
+							alert("Success!");
+							location.reload(false);
+						}
+					}
+				});
+				}
+			});
+
+		});
+		// common fuction handling 
+		
+		// select Type
+		function addSelectItemtype(t,ev){
+			ev.stopPropagation();
+			var p=$('#select_new_type');
+			var result = confirm("Add new Type?");
+			if (result) {
+				var txt=$(t).prev().val().replace(/[|]/g,"");
+				if ($.trim(txt)=='') return;
+				createtypeform('-',txt);
+				var o=$('option', p).eq(-2);
+				o.before( $("<option>", { "selected": true, "text": txt}) );
+			}
+			p.selectpicker('refresh');
+		}		
+		function addSelectInpKeyPresstype(t,ev){
+			ev.stopPropagation();
+			// do not allow pipe character
+			if (ev.which==124) ev.preventDefault();
+			// enter character adds the option
+			if (ev.which==13)
+			{
+				ev.preventDefault();
+				addSelectItemtype($(t).next(),ev);
+			}
+		}
+		function createtypeform(text1,text){
+			var data={tp_code:text1,tp_name:text};
+			$.ajax({
+				type: 'POST',
+				data: JSON.stringify(data),
+				contentType: 'application/json',
+				url: '/mstritem/newmstrtype',						
+				success: function(data) {
+					console.log(data);
+				}
+			});			
+		}
+		// select Merk
+		function addSelectItemmerk(t,ev){
+			ev.stopPropagation();
+			var p=$('#selectmerk');
+			var result = confirm("Add new Merk?");
+			if (result) {
+				var txt=$(t).prev().val().replace(/[|]/g,"");
+				if ($.trim(txt)=='') return;
+				createmerkform('-',txt);
+				var o=$('option', p).eq(-2);
+				o.before( $("<option>", { "selected": true, "text": txt}) );
+			}
+			p.selectpicker('refresh');
+		}		
+		function addSelectInpKeyPressmerk(t,ev){
+			ev.stopPropagation();
+			// do not allow pipe character
+			if (ev.which==124) ev.preventDefault();
+			// enter character adds the option
+			if (ev.which==13)
+			{
+				ev.preventDefault();
+				addSelectItemmerk($(t).next(),ev);
+			}
+		}
+		function createmerkform(text1,text){
+			var data={mr_code:text1,mr_name:text};
+			$.ajax({
+				type: 'POST',
+				data: JSON.stringify(data),
+				contentType: 'application/json',
+				url: '/mstritem/newmstrmerk',						
+				success: function(data) {
+					console.log(data);
+				}
+			});			
+		}
+		// select category
+		function addSelectItem(t,ev){
+			ev.stopPropagation();
+			var p=$('#select_new_cat');
+			var result = confirm("Add new Category?");
+			if (result) {
+				var txt=$(t).prev().val().replace(/[|]/g,"");
+				if ($.trim(txt)=='') return;
+				createcatform('-',txt);
+				var o=$('option', p).eq(-2);
+				o.before( $("<option>", { "selected": true, "text": txt}) );
+			}
+			p.selectpicker('refresh');
+		}		
+		function addSelectInpKeyPress(t,ev){
+			ev.stopPropagation();
+			// do not allow pipe character
+			if (ev.which==124) ev.preventDefault();
+			// enter character adds the option
+			if (ev.which==13)
+			{
+				ev.preventDefault();
+				addSelectItem($(t).next(),ev);
+			}
+		}
+		function createcatform(text1,text){
+			var data={st_code:text1,st_name:text};
+			$.ajax({
+				type: 'POST',
+				data: JSON.stringify(data),
+				contentType: 'application/json',
+				url: '/mstritem/newmstrcat',						
+				success: function(data) {
+					console.log(data);
+				}
+			});			
+		}
+		//select picker um
+		function addSelectItemum(t,ev){
+			ev.stopPropagation();
+			var p=$('#select_new_um');
+			var result = confirm("Add new Unit Measure?");
+			if (result) {
+				var txt=$(t).prev().val().replace(/[|]/g,"");
+				if ($.trim(txt)=='') return;
+				createumform('-',txt)
+				var o=$('option', p).eq(-2);
+				o.before( $("<option>", { "selected": true, "text": txt}) );
+			}
+			p.selectpicker('refresh');
+		}		
+		function addSelectInpKeyPressum(t,ev){
+			ev.stopPropagation();
+			// do not allow pipe character
+			if (ev.which==124) ev.preventDefault();
+			// enter character adds the option
+			if (ev.which==13)
+			{
+				ev.preventDefault();
+				addSelectItemum($(t).next(),ev);
+			}
+		}
+		function createumform(text1,text){
+			var data={um_code:text1,um_name:text};
+			$.ajax({
+				type: 'POST',
+				data: JSON.stringify(data),
+				contentType: 'application/json',
+				url: '/mstritem/newmstrum',						
+				success: function(data) {
+					console.log(data);
+				}
+			});			
+		}

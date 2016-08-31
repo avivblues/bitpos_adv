@@ -1,0 +1,194 @@
+extends layout
+
+block style
+	style(type='text/css').
+		
+block halaman
+	ol.breadcrumb
+		li
+			a(href='/') Home
+		li.active #{title}
+	.row.mt
+		.col-xs-12
+			.content-panel
+				.row
+					.col-xs-12.col-sm-6.col-md-8
+						.col-xs-8.col-md-6
+							.btn-group(role='group', aria-label='...')
+								button#btnnewcoa.btn.btn-success(type='button') New
+								//button.btn.btn-info(type='button') On
+								//button.btn.btn-default(type='button') Off
+								.btn-group(role='group')
+									button.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+										| Export
+										span.caret
+									ul.dropdown-menu
+										li
+											a(href='#') Excel
+										li
+											a(href='#') CSV
+										li
+											a(href='#') PDF
+								button.btn.btn-warning(type='button') Import
+						.col-xs-4.col-md-2
+							select.form-control
+								option Show
+								option(selected='selected') 10
+								option 50
+								option 100
+								option 1000
+						.col-xs-6.col-md-4
+							select.form-control
+								option(selected='') Type
+								each dttype in coatype
+									option(value=dttype.mstr_type)=dttype.mstr_type
+					.col-xs-6.col-md-4
+						.input-group
+							input.form-control(type='text', placeholder='Search for.... or scan barcode')
+							span.input-group-btn
+								button.btn.btn-default(type='button') Go!
+				br
+				section#no-more-tables
+					table#tabledata.table.table-bordered.table-striped.table-condensed.cf
+						thead.cf
+							tr
+								th No
+								th Code
+								th Descriptions
+								th Type
+								th Action
+						tbody
+							each baris in data
+								tr
+									td(id='dt'+baris.mstr_id)=baris.mstr_id
+									td(id='dtcd'+baris.mstr_id)=baris.mstr_code
+									td(id='dtdsc'+baris.mstr_id)=baris.mstr_desc
+									td(id='dttp'+baris.mstr_id)=baris.mstr_type
+									td(id='Action')
+										button.btn.btn-primary.btn-xs(id='edit'+baris.mstr_id)
+											i.fa.fa-pencil
+										//button.btn.btn-danger.btn-xs(id='males'+baris.mstr_id)
+										button.btn.btn-danger.btn-xs(id=baris.mstr_id)
+											i.fa.fa-trash-o
+			.col-sm-6
+				#example_info.dataTables_info(aria-live='polite', role='status') Showing 1 to 10 of 57 entries
+			.col-sm-4
+				nav(aria-label='Page navigation')
+					ul.pagination
+						li
+							a(href='#', aria-label='Previous')
+								span(aria-hidden='true') «
+						li
+							a(href='#') 1
+						li
+								a(href='#') 2
+						li
+							a(href='#') 3
+						li
+							a(href='#') 4
+						li
+							a(href='#') 5
+						li
+							a(href='#', aria-label='Next')
+								span(aria-hidden='true') »									
+		// Modal Create master coa
+		#MDL_New_mstrcoa.modal.fade(tabindex='-1', role='dialog', aria-labelledby='lbl_mdl_mstrcoa')
+			.modal-dialog(role='document')
+				.modal-content
+					.modal-header
+						button.close(type='button', data-dismiss='modal', aria-label='Close')
+							span(aria-hidden='true') ×
+						h4#lbl_mdl_mstrcoa.modal-title Create Form
+					.modal-body
+						.form-group
+							label Code
+							input#mdl_create_code.form-control(type='text')
+							label Descriptions
+							input#mdl_create_desc.form-control(type='text')
+							label Type
+							input#mdl_create_type.form-control(type='text')
+					.modal-footer
+						button.btn.btn-default(type='button', data-dismiss='modal') Close
+						button#mdlbtncreatecoa.btn.btn-primary(type='button') Save changes
+		// Modal Editing master coa
+		#MDL_Edit_mstrcoa.modal.fade(tabindex='-1', role='dialog', aria-labelledby='lbl_mdl_mstrcoa')
+			.modal-dialog(role='document')
+				.modal-content
+					.modal-header
+						button.close(type='button', data-dismiss='modal', aria-label='Close')
+							span(aria-hidden='true') ×
+						h4#lbl_mdl_mstrcoa.modal-title Editing Form
+					.modal-body
+						.form-group
+							label#mdl_edit_lbl_id No
+							input#mdl_edit_id.form-control(type='text', readonly='')
+							label COA Code
+							input#mdl_edit_code.form-control(type='text')
+							label Descriptions
+							input#mdl_edit_desc.form-control(type='text')
+							label Type
+							input#mdl_edit_type.form-control(type='text')
+					.modal-footer
+						button.btn.btn-default(type='button', data-dismiss='modal') Close
+						button.btn.btn-primary(type='button') Save changes
+append script
+	script(type='application/javascript').
+		$(function(){
+			// select picker end			
+			$(".btn.btn-primary.btn-xs").click(function(){
+				var eID = $(this).attr("id").replace("edit","");
+				var cd = $("#dtcd"+eID).text();var dsc = $("#dtdsc"+eID).text();var tp = $("#dttp"+eID).text();
+
+				$("#mdl_edit_id").val(eID);
+				$("#mdl_edit_code").val(cd);
+				$("#mdl_edit_desc").val(dsc);
+				$("#mdl_edit_type").val(tp);
+				$('#MDL_Edit_mstrcoa').modal('show')
+			});
+			$("#btnnewcoa").click(function(){
+				var eID = $(this).attr("id").replace("edit","");
+				$('#MDL_New_mstrcoa').modal('show')
+			});
+			$("#mdlbtncreatecoa").click(function(){
+				var a = $("#mdl_create_code").val();
+				var b = $("#mdl_create_desc").val();
+				var c = $("#mdl_create_type").val();
+				var data={mstr_code:a,mstr_desc:b,mstr_type:c};
+				var result = confirm("Create COA?");
+				if (result) {
+					$.ajax({
+						type: 'POST',
+						data: JSON.stringify(data),
+						contentType: 'application/json',
+						url: '/mstraccount/create',						
+						success: function(data) {
+							console.log(data);
+							alert(data);
+						}
+					});
+					location.reload(false);
+				}
+			});
+			$(".btn.btn-danger.btn-xs").click(function(){
+				var result = confirm("Want to delete this coa?");
+				if (result) {
+				var data={};
+				data.mstr_id=$(this).attr("ID");
+				$.ajax({
+					type: 'POST',
+					data: JSON.stringify(data),
+					contentType: 'application/json',
+					url: '/mstraccount/delete',						
+					success: function(data) {
+						if(data=="OK"){
+							alert("Success!");
+							location.reload(false);
+						}
+					}
+				});
+				}
+			});
+
+		});
+		
+		

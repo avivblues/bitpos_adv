@@ -1,0 +1,13 @@
+{"MasterItem": [
+		{"autonumber":{
+			"title": "Auto Generate Kode Item",
+			"setting": "yes"
+		 }
+		},
+		{"closingperiod":{
+			"title": "Closing data setiap Bulan",
+			"setting": "yes"
+		 }
+		}
+	]
+}
